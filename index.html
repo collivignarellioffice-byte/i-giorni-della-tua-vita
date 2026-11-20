@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101217">
+<title>I giorni della tua vita</title>
+<style>
+:root{color-scheme:dark;--bg:#101217;--panel:#171a21;--border:#303640;--ink:#eff3f9;--muted:#a6b0c0;--past:#398be0;--future:#303946;--today:#b7efff;--note:#ff606b}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse 680px 420px at 78% 0%,#192945,transparent),var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+main{max-width:1160px;margin:auto;padding:54px 28px 48px}
+main.compact-view{max-width:none}
+header{position:relative;padding:0 0 30px}
+.top-actions{position:absolute;top:0;right:0;display:flex;gap:6px}
+.account-actions{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+#login-email-form{margin-top:12px}
+#login-email-form input,#birth-form input{padding:8px;background:var(--bg);color:var(--ink);border:1px solid var(--border);border-radius:6px;font:inherit}
+#login-email-form input{min-width:0;width:100%}
+#login-email-submit{margin-top:8px}
+#login-screen,#birth-form{padding:24px;background:var(--panel);border:1px solid var(--border);border-radius:14px;max-width:540px}
+#login-screen p,#birth-form p{color:var(--muted)}
+#birth-form label{display:block;margin:0 0 7px}
+#birth-status,#login-status{overflow-wrap:anywhere}
+header h1{padding-right:195px}
+@media(max-width:760px){header h1{padding:46px 0 0}}
+h1{font-size:clamp(2.5rem,7vw,5.4rem);line-height:.98;letter-spacing:-.035em;margin:0 0 16px;font-weight:650}
+.subtitle{color:var(--muted);font-size:1rem;margin:0}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:28px 0 13px;border-block:1px solid var(--border);padding:16px 0}
+.summary div{padding:0 20px;border-left:1px solid var(--border)}
+.summary div:first-child{border:0;padding-left:0}
+dt{color:var(--muted);font-size:.82rem}
+dd{margin:0;font-size:clamp(1.16rem,3.6vw,2rem);font-weight:620;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.toolbar,.legend,nav,.card-head,.view-controls,.view-toggle,.note-actions{display:flex;align-items:center;flex-wrap:wrap}
+.toolbar{justify-content:space-between;gap:12px;margin-bottom:15px}
+.legend,nav{gap:9px 15px}
+.legend span{white-space:nowrap;color:var(--muted);font-size:.83rem;display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--future)}
+.legend .past{background:var(--past)}
+.legend .today{background:var(--today);outline:1px solid #6bc8f8;outline-offset:2px}
+nav{gap:6px}
+.legend .note{width:7px;height:7px;background:var(--note);border-radius:50%}
+.view-controls{gap:8px 16px;margin-bottom:14px}
+.view-toggle{gap:4px}
+.color-picker{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.85rem}
+.color-picker input{width:34px;height:30px;padding:2px;border:1px solid var(--border);border-radius:6px;background:var(--panel);cursor:pointer}
+button{font:inherit;cursor:pointer}
+.view-toggle button,.note-actions button,.settings-button,#settings-dialog button,#email-dialog button{border:1px solid var(--border);border-radius:7px;background:var(--panel);color:var(--ink);padding:6px 12px}
+.view-toggle button[aria-pressed="true"]{background:#213652;border-color:#619ed9;color:#e3f3ff}
+button:focus-visible,textarea:focus-visible,.color-picker input:focus-visible{outline:2px solid var(--today);outline-offset:2px}
+dialog{width:min(480px,calc(100% - 28px));max-height:calc(100% - 28px);padding:20px;border:1px solid #4c6178;border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 16px 60px #0009}
+dialog::backdrop{background:#090d16b8}
+dialog p{margin:5px 0 12px;color:var(--muted)}
+dialog label{display:block;margin:14px 0 5px}
+dialog textarea{width:100%;min-height:115px;resize:vertical;background:var(--bg);color:var(--ink);border:1px solid #4c6178;border-radius:7px;padding:10px;font:inherit}
+.note-actions{gap:7px;margin-top:13px}
+.note-actions #note-save{margin-left:auto;background:#2564a0;border-color:#508bc4}
+.note-actions #note-delete{color:#ffacb2}
+dialog #note-error,dialog #email-error{color:#ffacb2}
+.dialog-head,.settings-actions,.date-row,.recipient-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dialog-head{justify-content:space-between}
+.settings-section{margin-top:17px;padding-top:12px;border-top:1px solid var(--border)}
+.settings-section h3{margin:0;font-size:1rem}
+.settings-section a{color:var(--today)}
+#settings-dialog .color-picker{display:inline-flex}
+#cloud-setup summary{cursor:pointer}
+.queue-list article{border-top:1px solid var(--border);padding:8px 0}
+.queue-list article p{overflow-wrap:anywhere}
+#email-dialog input{background:var(--bg);color:var(--ink);border:1px solid #4c6178;border-radius:7px;padding:7px;font:inherit;min-width:0}
+#email-subject{width:100%}
+.recipient-row input{flex:1}
+.date-row label{flex:1}
+.date-row input{display:block;width:100%;margin-top:5px}
+#email-dialog #email-submit{margin-left:auto;background:#2564a0;border-color:#508bc4}
+#schedule-notice{position:fixed;right:16px;bottom:16px;border:1px solid var(--border);padding:10px 14px;border-radius:8px;background:var(--panel)}
+#note-email{margin-top:7px}
+.tooltip strong{white-space:normal}
+.tooltip{max-width:calc(100vw - 16px)}
+nav a{border:1px solid var(--border);padding:5px 10px;border-radius:7px;text-decoration:none;color:var(--ink);font-size:.85rem}
+nav a:hover,nav a:focus-visible{border-color:var(--today);color:var(--today)}
+.card{padding:18px 20px 20px;margin:0 0 15px;background:var(--panel);border:1px solid var(--border);border-radius:14px;scroll-margin-top:12px;break-inside:avoid}
+.card-head{justify-content:space-between;gap:2px 12px;margin-bottom:14px}
+h2{margin:0;font-size:1.3rem;font-weight:640;letter-spacing:-.035em}
+.card-head p{margin:0;color:var(--muted);font-size:.85rem}
+.chart{position:relative}
+.marker{position:absolute;pointer-events:none;border:1px solid #fff;border-radius:2px}
+canvas{width:100%;display:block;cursor:crosshair;outline-offset:5px;user-select:none;touch-action:pan-y}
+canvas:focus-visible{outline:1px solid var(--today);border-radius:2px}
+.tooltip{position:fixed;z-index:3;pointer-events:none;padding:9px 12px;background:#0d1520;color:var(--ink);border:1px solid #4c7697;border-radius:8px;box-shadow:0 6px 26px #0007;white-space:nowrap;font-size:.84rem}
+.tooltip strong,.tooltip span,.tooltip small{display:block}
+.tooltip small{color:#b1c8db;margin-top:3px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:560px){
+ main{padding:32px 14px 30px}
+ .card{padding:13px 10px}
+ .summary div{padding:0 8px}
+ .toolbar{align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main id="calendar">
+  <header>
+    <div class="top-actions">
+      <button class="settings-button" id="account-open" type="button" aria-haspopup="dialog">Accedi</button>
+      <button class="settings-button" id="settings-open" type="button" aria-haspopup="dialog">Impostazioni</button>
+    </div>
+    <h1>I giorni della tua vita</h1>
+    <p class="subtitle" id="calendar-subtitle" hidden></p>
+  </header>
+  <section id="login-screen" hidden>
+    <h2>Il tuo calendario</h2>
+    <p>Accedi per creare il tuo calendario e ritrovare le tue note.</p>
+    <button class="settings-button" id="login-open" type="button">Accedi</button>
+    <p id="login-status" role="status"></p>
+  </section>
+  <form id="birth-form" hidden>
+    <h2>Quando sei nata o nato?</h2>
+    <p>La data di nascita imposta il primo giorno del calendario.</p>
+    <label for="birth-date">Data di nascita</label>
+    <input type="date" id="birth-date" min="1900-01-01" required>
+    <button type="submit" class="settings-button" id="birth-submit">Crea calendario</button>
+    <p id="birth-status" role="status"></p>
+  </form>
+  <div id="calendar-content" hidden>
+    <dl class="summary">
+      <div><dt>Età di oggi</dt><dd id="current-age"></dd></div>
+      <div><dt>Giorni vissuti</dt><dd id="elapsed"></dd></div>
+      <div><dt>Giorni al 100° compleanno</dt><dd id="remaining"></dd></div>
+    </dl>
+    <div class="view-controls">
+      <div class="view-toggle" role="group" aria-label="Vista del calendario">
+        <button type="button" id="show-days" aria-pressed="true">Giorni</button>
+        <button type="button" id="show-weeks" aria-pressed="false">Settimane</button>
+        <button type="button" id="show-months" aria-pressed="false">Mesi</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="legend" aria-label="Legenda">
+        <span><i class="past"></i>Vissuto</span><span><i class="today"></i><span id="today-label">Oggi</span></span><span><i></i>Futuro</span><span><i class="note"></i>Nota</span>
+      </div>
+      <nav id="jump" aria-label="Fasce di età"></nav>
+    </div>
+    <div id="cards"></div>
+  </div>
+</main>
+<div id="tip" class="tooltip" aria-hidden="true" hidden><strong></strong><span></span><small></small></div>
+<dialog id="note-dialog" aria-labelledby="note-title">
+  <form id="note-form">
+    <h2 id="note-title"></h2>
+    <p id="note-date"></p>
+    <p id="note-age"></p>
+    <label for="note-text">Scrivi una nota</label>
+    <textarea id="note-text" rows="4" autofocus></textarea>
+    <p id="note-error" role="alert" hidden></p>
+    <button class="settings-button" id="note-email" type="button" hidden>Programma un’email</button>
+    <div class="note-actions">
+      <button type="button" id="note-delete" hidden>Elimina nota</button>
+      <button type="button" id="note-cancel">Annulla</button>
+      <button type="submit" id="note-save">Salva nota</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="settings-dialog" aria-labelledby="settings-title">
+  <form method="dialog" class="dialog-head"><h2 id="settings-title">Impostazioni</h2><button type="submit" autofocus>Chiudi</button></form>
+  <label class="color-picker">Colore dei quadratini <input type="color" id="past-color" value="#398be0"></label>
+  <section class="settings-section" aria-labelledby="account-title">
+    <h3 id="account-title">Account</h3>
+    <p id="cloud-status">Le note sono salvate in questo browser.</p>
+    <div class="settings-actions">
+      <button type="button" id="signout" hidden>Esci</button>
+      <button type="button" id="export-notes">Scarica le note</button>
+      <button type="button" id="import-local" hidden>Importa le note di questo browser</button>
+      <label id="cloud-import-label" hidden>Importa le note da un file <input type="file" id="import-notes" accept=".json,application/json"></label>
+    </div>
+    <p id="import-status" role="status"></p>
+  </section>
+  <section class="settings-section" id="gmail-controls" hidden>
+    <h3>Mittente delle email</h3>
+    <p id="gmail-status">Il collegamento Gmail richiede un’autorizzazione separata.</p>
+    <button type="button" id="gmail-connect">Collega Gmail</button>
+  </section>
+  <section class="settings-section" id="email-queue" aria-labelledby="queue-title" hidden>
+    <h3 id="queue-title">Email programmate</h3>
+    <p id="queue-status" role="status"></p>
+    <div class="queue-list" id="queue-list"></div>
+  </section>
+</dialog>
+<dialog id="account-dialog" aria-labelledby="login-title">
+  <form method="dialog" class="dialog-head"><h2 id="login-title">Accedi</h2><button class="settings-button" type="submit">Chiudi</button></form>
+  <div class="account-actions">
+    <button class="settings-button" id="login-google" type="button" autofocus>Accedi con Google</button>
+    <button class="settings-button" id="login-email-open" type="button">Accedi con email</button>
+  </div>
+  <form id="login-email-form" hidden>
+    <label for="login-address">Indirizzo email</label>
+    <input id="login-address" type="email" autocomplete="email" required>
+    <button class="settings-button" id="login-email-submit" type="submit">Ricevi il link di accesso</button>
+  </form>
+  <p id="account-status" role="status"></p>
+</dialog>
+<dialog id="email-dialog" aria-labelledby="email-title">
+  <div class="dialog-head">
+    <h2 id="email-title">Programma un’email</h2>
+    <form method="dialog" id="email-close-form"><button type="submit">Chiudi</button></form>
+  </div>
+  <p>Mittente <strong id="email-sender"></strong></p>
+  <form id="email-form">
+    <label for="email-to">Destinatario</label>
+    <div class="recipient-row">
+      <input id="email-to" type="email" required maxlength="254" autofocus>
+      <button type="button" id="email-to-self">A me stessa</button>
+    </div>
+    <label for="email-subject">Oggetto</label>
+    <input id="email-subject" type="text" required maxlength="150">
+    <label for="email-body">Messaggio</label>
+    <textarea id="email-body" rows="4" required maxlength="4000"></textarea>
+    <div class="date-row">
+      <label>Data <input id="email-date" type="date" required></label>
+      <label>Ora italiana <input id="email-time" type="time" value="09:00" required></label>
+    </div>
+    <p id="email-error" role="alert" hidden></p>
+    <div class="note-actions"><button id="email-submit" type="submit">Programma email</button></div>
+  </form>
+</dialog>
+<div id="schedule-notice" role="status" hidden></div>
+<p id="announcement" class="sr-only" aria-live="polite"></p>
+<noscript>Attiva JavaScript nel browser per vedere il calendario interattivo.</noscript>
+<script type="application/json" id="calendar-config">{"supabaseUrl":"","supabasePublishableKey":"","gmailEnabled":false}</script>
+<script>
+'use strict';
+
+const DAY = 86400000;
+const originalBirth = Date.UTC(2000,0,1) / DAY;
+let birth = originalBirth;
+let birthYear = 2000;
+let birthMonth = 0;
+let birthDay = 1;
+let end;
+function birthday(years) { return monthStart(years * 12); }
+function monthStart(index) {
+  const last = new Date(Date.UTC(birthYear,birthMonth+index+1,0)).getUTCDate();
+  return Date.UTC(birthYear,birthMonth+index,Math.min(birthDay,last)) / DAY;
+}
+
+function setBirthDate(date) {
+  birth = date.getTime() / DAY;
+  birthYear = date.getUTCFullYear();
+  birthMonth = date.getUTCMonth();
+  birthDay = date.getUTCDate();
+  end = birthday(100);
+  today = undefined;
+  const subtitle = longDate.format(date);
+  get('calendar-subtitle').textContent = 'Dal ' + subtitle + ' al 100° compleanno';
+  for (const panel of panels) get('range-'+panel.first).textContent = panelDates(panel.first);
+}
+
+function panelDates(first) {
+  return shortDate.formatRange(new Date(birthday(first)*DAY),new Date((birthday(first+25)-1)*DAY));
+}
+
+function renderCalendar() {
+  if (typeof today !== 'number') updateToday();
+  else for (const panel of panels) render(panel);
+}
+const number = new Intl.NumberFormat('it-IT');
+const dateText = new Intl.DateTimeFormat('it-IT', { dateStyle:'full', timeZone:'UTC' });
+const shortDate = new Intl.DateTimeFormat('it-IT', { dateStyle:'medium', timeZone:'UTC' });
+const longDate = new Intl.DateTimeFormat('it-IT', { dateStyle:'long', timeZone:'UTC' });
+const italyDate = new Intl.DateTimeFormat('en-GB', {
+  timeZone:'Europe/Rome', year:'numeric', month:'numeric', day:'numeric'
+});
+const get = id => document.getElementById(id);
+const colors = { past:'#398be0', future:'#303946', today:'#b7efff', label:'#a6b0c0', note:'#ff606b' };
+const tooltip = get('tip');
+const panels = [];
+let today;
+let active = null;
+const views = {
+  days: { key:'day', current:'Oggi', noteTitle:'Nota del giorno' },
+  weeks: { key:'week', current:'Questa settimana', noteTitle:'Nota della settimana', agePrefix:'A inizio settimana' },
+  months: { key:'month', current:'Questo mese', noteTitle:'Nota del mese', agePrefix:'A inizio mese' }
+};
+let view = views.days;
+let editing = null;
+const noteDialog = get('note-dialog');
+const noteInput = get('note-text');
+const storageKey = 'life-calendar-notes-v1';
+const colorKey = 'life-calendar-past-color';
+const colorInput = get('past-color');
+const defaultPastColor = colors.past;
+
+function readPastColor() {
+  try {
+    const saved = localStorage.getItem(colorKey);
+    if (/^#[0-9a-f]{6}$/i.test(saved)) return saved;
+  } catch {
+    // The picker is still usable for this session when storage is unavailable.
+  }
+  return defaultPastColor;
+}
+
+function applyPastColor(color) {
+  colors.past = color;
+  colorInput.value = color;
+  document.documentElement.style.setProperty('--past', color);
+  for (const panel of panels) render(panel);
+}
+
+function readNotes() {
+  try {
+    const data = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    return new Map(Object.entries(data).filter(([, value]) => typeof value === 'string' && value.trim()));
+  } catch {
+    return new Map();
+  }
+}
+
+let notes = readNotes();
+const noteKey = day => view.key + ':' + day;
+
+function unitStart(index) {
+  if (view === views.months) return monthStart(index);
+  return birth + index * (view === views.weeks ? 7 : 1);
+}
+
+function unitIndex(day) {
+  if (view === views.months) {
+    const { years, months } = ageOn(day);
+    return years * 12 + months;
+  }
+  return Math.floor((day - birth) / (view === views.weeks ? 7 : 1));
+}
+
+function unitEnd(index) {
+  return Math.min(unitStart(index + 1), end) - 1;
+}
+
+function unitDate(day) {
+  const date = new Date(day * DAY);
+  if (view === views.days) return dateText.format(date);
+  return shortDate.formatRange(date, new Date(unitEnd(unitIndex(day)) * DAY));
+}
+
+function unitAge(day) {
+  const age = ageText(day);
+  return view.agePrefix ? view.agePrefix + ' · ' + age : age;
+}
+
+function openNote(panel, day) {
+  hide();
+  const key = noteKey(day);
+  editing = { panel, key };
+  get('note-title').textContent = view.noteTitle;
+  get('note-date').textContent = unitDate(day);
+  get('note-age').textContent = unitAge(day);
+  emailRange = { start:day, end:unitEnd(unitIndex(day)) };
+  get('note-email').hidden = !accountId || !config.gmailEnabled || emailRange.end <= today;
+  noteInput.value = notes.get(key) || '';
+  get('note-delete').hidden = !notes.has(key);
+  get('note-error').hidden = true;
+  noteDialog.showModal();
+}
+
+async function saveNote(value) {
+  if (!editing) return;
+  const saveButton = get('note-save');
+  const deleteButton = get('note-delete');
+  if (saveButton.disabled) return;
+  const cancelButton = get('note-cancel');
+  const emailButton = get('note-email');
+  const buttons = [saveButton, deleteButton, cancelButton, emailButton];
+  const { panel, key } = editing;
+  const error = get('note-error');
+  error.hidden = true;
+  for (const button of buttons) button.disabled = true;
+  try {
+    if (hosted) {
+      if (!accountId) throw Error('Accedi per salvare le note.');
+      const owner = accountId;
+      if (value) checked(await authClient.from('life_notes').upsert({
+        user_id:owner,note_key:key,body:value
+      },{onConflict:'user_id,note_key'}));
+      else checked(await authClient.from('life_notes').delete().eq('user_id',owner).eq('note_key',key));
+      if (owner !== accountId) return;
+      if (value) notes.set(key,value);
+      else notes.delete(key);
+    } else {
+      const updated = readNotes();
+      if (value) updated.set(key, value);
+      else updated.delete(key);
+      localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(updated)));
+      notes = updated;
+    }
+    render(panel);
+    noteDialog.close();
+    get('announcement').textContent = value ? 'Nota salvata.' : 'Nota eliminata.';
+  } catch (failure) {
+    displayError(error, hosted ? failure : Error('Il browser non ha potuto salvare la nota. Puoi copiare il testo prima di chiudere.'));
+  } finally {
+    for (const button of buttons) button.disabled = false;
+  }
+}
+
+function switchView(nextView) {
+  if (nextView === view) return;
+  hide();
+  view = nextView;
+  get('calendar').classList.toggle('compact-view', view !== views.days);
+  for (const [name, option] of Object.entries(views)) {
+    get('show-' + name).setAttribute('aria-pressed', String(view === option));
+  }
+  get('today-label').textContent = view.current;
+  for (const panel of panels) render(panel);
+}
+
+function firstIndex(year) {
+  const day = birthday(year);
+  const index = unitIndex(day);
+  return unitStart(index) < day ? index + 1 : index;
+}
+
+function dayInRome(now = new Date()) {
+  const parts = Object.fromEntries(italyDate.formatToParts(now).map(part => [part.type, part.value]));
+  return Date.UTC(+parts.year, +parts.month - 1, +parts.day) / DAY;
+}
+
+function ageOn(day) {
+  const date = new Date(day * DAY);
+  let index = (date.getUTCFullYear() - birthYear) * 12 + date.getUTCMonth() - birthMonth;
+  if (day < monthStart(index)) index--;
+  const years = Math.floor(index / 12);
+  const months = index - years * 12;
+  return { years, months, days:day - monthStart(index) };
+}
+
+function ageText(day) {
+  const { years, months, days } = ageOn(day);
+  return [years === 1 ? '1 anno' : years + ' anni',
+          months === 1 ? '1 mese' : months + ' mesi',
+          days === 1 ? '1 giorno' : days + ' giorni'].join(', ');
+}
+
+function updateToday() {
+  const current = dayInRome();
+  if (current === today) return;
+  today = current;
+  const age = ageOn(today);
+  get('current-age').textContent = age.years + ' anni, ' + age.months + (age.months === 1 ? ' mese' : ' mesi');
+  get('elapsed').textContent = number.format(Math.max(0, today - birth));
+  get('remaining').textContent = number.format(Math.max(0, end - today));
+  for (const panel of panels) render(panel);
+}
+
+function render(panel) {
+  const { canvas, first } = panel;
+  const width = canvas.getBoundingClientRect().width;
+  if (!width) return;
+  const packed = view !== views.days;
+  const labelWidth = width >= 420 ? 32 : 25;
+  const available = width - labelWidth;
+  if (available < 12) return;
+  const dailyColumns = width >= 900 ? 122 : width >= 660 ? 92 : width >= 420 ? 62 : 46;
+  const firstUnit = firstIndex(first);
+  const endUnit = firstIndex(first + 25);
+  const unitCount = endUnit - firstUnit;
+  const targetPitch = view === views.months ? 8 : 9;
+  // Keep all twelve months of an age together, including at narrow widths.
+  const unitsPerGroup = view === views.months ? 12 : 1;
+  const groups = Math.max(1, Math.floor(available / targetPitch / unitsPerGroup));
+  const columns = packed ? Math.min(unitCount, groups * unitsPerGroup) : dailyColumns;
+  const pitch = packed ? Math.min(12, available / columns) : available / columns;
+  const rows = Math.ceil((packed ? unitCount : 366) / columns);
+  const gap = Math.max(1.4, pitch * .25);
+  const cell = pitch - gap;
+  const bandStep = rows * pitch + (packed ? 0 : Math.max(3, gap * 1.7));
+  const bands = packed ? 1 : 25;
+  const height = Math.ceil(bands * bandStep);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.style.height = height + 'px';
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.font = packed ? '8px system-ui' : '11px system-ui';
+  ctx.textBaseline = 'middle';
+  panel.layout = { packed, bands, bandStep, columns, labelWidth, pitch, cell, rows, firstUnit, endUnit };
+
+  const currentAge = ageOn(today).years;
+  const currentIndex = unitIndex(today);
+  for (let band = 0; band < bands; band++) {
+    const age = first + band;
+    const start = packed ? firstUnit : firstIndex(age);
+    const count = (packed ? endUnit : firstIndex(age + 1)) - start;
+    const y = band * bandStep;
+    if (!packed && (band % 5 === 0 || band === 24 || age === currentAge)) {
+      ctx.fillStyle = age === currentAge ? colors.today : colors.label;
+      ctx.fillText(age, 1, y + rows * pitch / 2);
+    }
+    let lastLabelAge = -1;
+    for (let index = 0; index < count; index++) {
+      const unit = start + index;
+      const day = unitStart(unit);
+      const currentUnit = unit === currentIndex;
+      const x = labelWidth + index % columns * pitch;
+      const top = y + Math.floor(index / columns) * pitch;
+      if (packed && index % columns === 0) {
+        const rowAge = ageOn(day).years;
+        if (rowAge !== lastLabelAge) {
+          ctx.fillStyle = colors.label;
+          ctx.fillText(rowAge, 1, top + pitch / 2);
+          lastLabelAge = rowAge;
+        }
+      }
+      ctx.fillStyle = currentUnit ? colors.today : day < today ? colors.past : colors.future;
+      ctx.beginPath();
+      ctx.roundRect(x, top, cell, cell, Math.min(1.8, cell * .25));
+      ctx.fill();
+      if (notes.has(noteKey(day))) {
+        const radius = Math.max(1.15, Math.min(2.7, cell * .23));
+        ctx.fillStyle = colors.note;
+        ctx.beginPath();
+        ctx.arc(x + cell - radius - .35, top + radius + .35, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#101217';
+        ctx.lineWidth = .65;
+        ctx.stroke();
+      }
+      if (currentUnit) {
+        ctx.strokeStyle = '#6bc8f8';
+        ctx.lineWidth = .85;
+        ctx.strokeRect(x - .9, top - .9, cell + 1.8, cell + 1.8);
+      }
+    }
+  }
+  if (active?.panel === panel) highlight(active);
+}
+
+function locate(panel, event) {
+  if (!panel.layout) return null;
+  const { packed, bands, bandStep, columns, labelWidth, pitch, rows, firstUnit, endUnit } = panel.layout;
+  const rect = panel.canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left - labelWidth;
+  const y = event.clientY - rect.top;
+  const band = Math.floor(y / bandStep);
+  if (x < 0 || y < 0 || band >= bands) return null;
+  const row = Math.floor((y - band * bandStep) / pitch);
+  const column = Math.floor(x / pitch);
+  if (row >= rows || column >= columns) return null;
+  const start = packed ? firstUnit : firstIndex(panel.first + band);
+  const finish = packed ? endUnit : firstIndex(panel.first + band + 1);
+  const index = start + row * columns + column;
+  return index < finish ? unitStart(index) : null;
+}
+
+function highlight(selection) {
+  const { panel, day } = selection;
+  const { packed, bandStep, columns, labelWidth, pitch, cell, firstUnit } = panel.layout;
+  const band = packed ? 0 : ageOn(day).years - panel.first;
+  const start = packed ? firstUnit : firstIndex(panel.first + band);
+  const index = unitIndex(day) - start;
+  const rect = panel.canvas.getBoundingClientRect();
+  const x = labelWidth + index % columns * pitch;
+  const y = band * bandStep + Math.floor(index / columns) * pitch;
+  const marker = panel.marker;
+  marker.style.left = x - .6 + 'px';
+  marker.style.top = y - .6 + 'px';
+  marker.style.width = marker.style.height = cell + 1.2 + 'px';
+  marker.hidden = false;
+  return { x:rect.left + x + cell / 2, y:rect.top + y + cell / 2 };
+}
+
+function show(panel, day, pointer, announce = false) {
+  const previous = active;
+  active = { panel, day };
+  if (previous && previous.panel !== panel) previous.panel.marker.hidden = true;
+  const anchor = highlight(active);
+  const date = unitDate(day);
+  const age = unitAge(day);
+  const status = unitIndex(day) === unitIndex(today) ? view.current : day < today ? 'Vissuto' : 'Futuro';
+  const detail = notes.has(noteKey(day)) ? status + ' · Nota presente' : status;
+  tooltip.children[0].textContent = date;
+  tooltip.children[1].textContent = age;
+  tooltip.children[2].textContent = detail;
+  tooltip.hidden = false;
+  const { x, y } = pointer || anchor;
+  const left = Math.max(8, Math.min(x + 13, innerWidth - tooltip.offsetWidth - 8));
+  const top = Math.max(8, y + tooltip.offsetHeight + 18 < innerHeight ? y + 14 : y - tooltip.offsetHeight - 12);
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+  if (announce) get('announcement').textContent = [date, age, detail].join('. ');
+  return anchor;
+}
+
+function hide() {
+  const previous = active;
+  active = null;
+  tooltip.hidden = true;
+  if (previous) previous.panel.marker.hidden = true;
+}
+
+function makePanel(first) {
+  const last = first + 25;
+  const section = document.createElement('section');
+  section.className = 'card';
+  section.id = 'eta-' + first;
+  section.setAttribute('aria-labelledby', 'title-' + first);
+  section.innerHTML = '<div class="card-head"><h2 id="title-' + first + '">' + first + '–' + last +
+    ' anni</h2><p id="range-' + first + '">' + panelDates(first) + '</p></div>' +
+    '<div class="chart"><canvas tabindex="0" aria-label="Calendario da ' + first + ' a ' + (last - 1) +
+    ' anni compiuti. Usa le frecce per esplorare il calendario e Invio per aprire una nota."></canvas><div class="marker" hidden></div></div>';
+  get('cards').append(section);
+  const link = document.createElement('a');
+  link.href = '#' + section.id;
+  link.textContent = first + '–' + last;
+  link.setAttribute('aria-label', first + '–' + last + ' anni');
+  get('jump').append(link);
+
+  const canvas = section.querySelector('canvas');
+  const panel = { first, canvas, marker:section.querySelector('.marker') };
+  panels.push(panel);
+  canvas.addEventListener('pointermove', event => {
+    if (event.pointerType === 'touch') return;
+    const day = locate(panel, event);
+    if (day === null) hide();
+    else show(panel, day, { x:event.clientX, y:event.clientY });
+  });
+  canvas.addEventListener('pointerleave', event => {
+    if (event.pointerType !== 'touch') hide();
+  });
+  canvas.addEventListener('click', event => {
+    const day = locate(panel, event);
+    if (day !== null) openNote(panel, day);
+  });
+  canvas.addEventListener('blur', hide);
+  canvas.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { hide(); return; }
+    const start = firstIndex(first);
+    const finish = firstIndex(last) - 1;
+    const initial = Math.max(start, Math.min(finish, unitIndex(today)));
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openNote(panel, active?.panel === panel ? active.day : unitStart(initial));
+      return;
+    }
+    const step = { ArrowLeft:-1, ArrowRight:1, ArrowUp:-panel.layout.columns, ArrowDown:panel.layout.columns };
+    if (!(event.key in step) && event.key !== 'Home' && event.key !== 'End') return;
+    event.preventDefault();
+    let index = active?.panel === panel ? unitIndex(active.day) + (step[event.key] || 0) : initial;
+    if (event.key === 'Home') index = start;
+    if (event.key === 'End') index = finish;
+    index = Math.max(start, Math.min(finish, index));
+    const day = unitStart(index);
+    const { y } = show(panel, day, null, true);
+    if (y < 10 || y > innerHeight - 30) {
+      window.scrollBy(0, y - innerHeight / 2);
+      requestAnimationFrame(() => {
+        if (active?.panel === panel && active.day === day) show(panel, day, null);
+      });
+    }
+  });
+  new ResizeObserver(() => {
+    const width = canvas.getBoundingClientRect().width;
+    if (width === panel.width) return;
+    panel.width = width;
+    render(panel);
+  }).observe(canvas);
+}
+
+for (const [name, option] of Object.entries(views)) {
+  get('show-' + name).addEventListener('click', () => switchView(option));
+}
+applyPastColor(readPastColor());
+colorInput.addEventListener('input', () => applyPastColor(colorInput.value));
+colorInput.addEventListener('change', () => {
+  try {
+    localStorage.setItem(colorKey, colorInput.value);
+  } catch {
+    // Keep the selected color for this session.
+  }
+});
+get('note-form').addEventListener('submit', event => {
+  event.preventDefault();
+  saveNote(noteInput.value.trim());
+});
+get('note-delete').addEventListener('click', () => saveNote(''));
+get('note-cancel').addEventListener('click', () => noteDialog.close());
+noteDialog.addEventListener('close', () => { if (!noteDialog.open) editing = null; });
+noteDialog.addEventListener('cancel', event => {
+  if (get('note-save').disabled) event.preventDefault();
+});
+window.addEventListener('storage', event => {
+  if (event.key === colorKey || event.key === null) applyPastColor(readPastColor());
+  if (hosted || (event.key !== storageKey && event.key !== null)) return;
+  notes = readNotes();
+  for (const panel of panels) render(panel);
+});
+
+
+setBirthDate(new Date(originalBirth * DAY));
+for (const first of [0, 25, 50, 75]) makePanel(first);
+setInterval(() => { if (!get('calendar-content').hidden) updateToday(); }, 30000);
+document.addEventListener('visibilitychange', () => {
+  if (!get('calendar-content').hidden) updateToday();
+});
+document.addEventListener('pointerdown', event => {
+  if (!event.target.closest('canvas')) hide();
+});
+
+const accountDialog = get('account-dialog');
+const settingsDialog = get('settings-dialog');
+const accountStatus = get('account-status');
+const cloudStatus = get('cloud-status');
+const emailDialog = get('email-dialog');
+const config = JSON.parse(get('calendar-config').textContent);
+const hosted = Boolean(config.supabaseUrl && config.supabasePublishableKey);
+let authClient;
+let accountId = '';
+let gmailAddress = '';
+let emailRange = null;
+let emailId = '';
+let accountVersion = 0;
+
+function displayError(target, error) {
+  target.textContent = error?.message || 'Operazione non riuscita. Riprova.';
+  target.hidden = false;
+}
+
+function checked({data, error}) {
+  if (error) throw error;
+  return data;
+}
+
+function downloadFile(name, content) {
+  const url = URL.createObjectURL(new Blob([content], {type:'application/json'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function isoDay(day) {
+  return new Date(day * DAY).toISOString().slice(0, 10);
+}
+
+async function loadNotes(userId) {
+  const result = new Map();
+  for (let offset = 0; ; offset += 500) {
+    const rows = checked(await authClient.from('life_notes').select('note_key,body')
+      .eq('user_id',userId).order('note_key').range(offset,offset+499));
+    for (const row of rows) result.set(row.note_key,row.body);
+    if (rows.length < 500) return result;
+  }
+}
+
+async function setAccount(session) {
+  if (session?.user.id === accountId && !get('calendar-content').hidden) return;
+  const attempt = ++accountVersion;
+  accountId = session?.user.id || '';
+  const email = session?.user.email || '';
+  gmailAddress = '';
+  notes = new Map();
+  hide();
+  if (noteDialog.open) noteDialog.close();
+  if (emailDialog.open) emailDialog.close();
+  get('queue-list').replaceChildren();
+  get('calendar-content').hidden = true;
+  get('calendar-subtitle').hidden = true;
+  get('login-screen').hidden = Boolean(accountId);
+  get('birth-form').hidden = true;
+  get('account-open').hidden = Boolean(accountId);
+  get('signout').hidden = !accountId;
+  get('gmail-controls').hidden = true;
+  get('cloud-import-label').hidden = true;
+  get('import-local').hidden = true;
+  get('email-queue').hidden = true;
+  get('import-status').textContent = '';
+  cloudStatus.textContent = email || 'Accedi per ritrovare le tue note su altri dispositivi.';
+  if (!accountId) return;
+  get('login-status').textContent = '';
+  if (accountDialog.open) accountDialog.close();
+  try {
+    const [profile, savedNotes] = await Promise.all([
+      authClient.from('life_profiles').select('birth_date').eq('user_id',accountId).maybeSingle().then(checked),
+      loadNotes(accountId)
+    ]);
+    if (attempt !== accountVersion) return;
+    if (!profile) {
+      get('birth-date').max = isoDay(dayInRome());
+      get('birth-form').hidden = false;
+      return;
+    }
+    const date = new Date(profile.birth_date + 'T00:00:00Z');
+    setBirthDate(date);
+    notes = savedNotes;
+    get('calendar-content').hidden = false;
+    get('calendar-subtitle').hidden = false;
+    get('cloud-import-label').hidden = false;
+    get('gmail-controls').hidden = !config.gmailEnabled;
+    if (birth === originalBirth && readNotes().size) get('import-local').hidden = false;
+    renderCalendar();
+    refreshGmail();
+  } catch (error) {
+    if (attempt !== accountVersion) return;
+    displayError(get('login-status'), error);
+    get('login-screen').hidden = false;
+  }
+}
+
+function openAccount() {
+  accountStatus.textContent = '';
+  accountDialog.showModal();
+}
+
+function redirectUrl() {
+  return new URL(location.pathname, location.origin).href;
+}
+
+function readyForLogin() {
+  if (authClient) return true;
+  accountStatus.textContent = hosted ? 'Accesso in caricamento. Riprova tra poco.' : 'L’accesso sarà disponibile nella versione online.';
+  return false;
+}
+
+get('account-open').addEventListener('click', openAccount);
+get('login-open').addEventListener('click', openAccount);
+get('login-google').addEventListener('click', async () => {
+  if (!readyForLogin()) return;
+  try { checked(await authClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectUrl()}})); }
+  catch (error) { displayError(accountStatus,error); }
+});
+get('login-email-open').addEventListener('click', () => {
+  get('login-email-form').hidden = false;
+  get('login-address').focus();
+});
+get('login-email-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!readyForLogin()) return;
+  const submit = get('login-email-submit');
+  submit.disabled = true;
+  try {
+    checked(await authClient.auth.signInWithOtp({
+      email:get('login-address').value.trim(),options:{emailRedirectTo:redirectUrl()}
+    }));
+    accountStatus.textContent = 'Controlla la posta e apri il link in questo browser.';
+  } catch (error) { displayError(accountStatus,error); }
+  finally { submit.disabled = false; }
+});
+get('signout').addEventListener('click', async () => {
+  try {
+    checked(await authClient.auth.signOut({scope:'local'}));
+    if (settingsDialog.open) settingsDialog.close();
+  } catch (error) { displayError(cloudStatus,error); }
+});
+get('birth-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!accountId) return;
+  const submit = get('birth-submit');
+  submit.disabled = true;
+  try {
+    const owner = accountId;
+    const session = checked(await authClient.auth.getSession()).session;
+    if (!session || session.user.id !== owner || owner !== accountId) throw Error('Accedi di nuovo.');
+    checked(await authClient.from('life_profiles').insert({user_id:owner,birth_date:get('birth-date').value}));
+    await setAccount(session);
+  } catch (error) { displayError(get('birth-status'),error); }
+  finally { submit.disabled = false; }
+});
+
+async function importNotes(entries) {
+  if (!entries || typeof entries !== 'object' || Array.isArray(entries)) throw Error('File delle note non valido.');
+  const owner = accountId;
+  if (!owner) throw Error('Accedi per importare le note.');
+  const rows = Object.entries(entries).map(([key, body]) => {
+    const date = Number(key.split(':')[1]);
+    if (!/^(day|week|month):-?\d{1,6}$/.test(key) || typeof body !== 'string' ||
+        !body.trim() || body.length > 8000 || date < birth || date >= end) throw Error('Il file contiene note incompatibili con questo calendario.');
+    return {user_id:owner,note_key:key,body};
+  });
+  for (let i = 0; i < rows.length; i += 100) {
+    checked(await authClient.from('life_notes').upsert(rows.slice(i,i+100),{onConflict:'user_id,note_key',ignoreDuplicates:true}));
+  }
+  const imported = await loadNotes(owner);
+  if (owner !== accountId) return;
+  notes = imported;
+  renderCalendar();
+  get('import-status').textContent = 'Note importate. Le note già presenti nel tuo account sono state conservate.';
+}
+
+get('export-notes').addEventListener('click', () => downloadFile('note-calendario.json',JSON.stringify(Object.fromEntries(notes),null,2)));
+get('import-local').addEventListener('click', async () => {
+  try { await importNotes(Object.fromEntries(readNotes())); }
+  catch (error) { displayError(get('import-status'),error); }
+});
+get('import-notes').addEventListener('change', async event => {
+  const input = event.target;
+  try { if (input.files[0]) await importNotes(JSON.parse(await input.files[0].text())); }
+  catch (error) { displayError(get('import-status'),error); }
+  finally { input.value = ''; }
+});
+
+async function gmailCall(action, args = {}) {
+  const session = checked(await authClient.auth.getSession()).session;
+  if (!session) throw Error('Accedi per continuare.');
+  const response = await fetch(config.supabaseUrl.replace(/\/$/,'')+'/functions/v1/calendar-gmail', {
+    method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.supabasePublishableKey,'Content-Type':'application/json'},
+    body:JSON.stringify({action,...args})
+  });
+  const result = await response.json();
+  if (!response.ok) throw Error(result.error || 'Funzione Gmail non disponibile.');
+  return result;
+}
+
+async function refreshGmail() {
+  if (!accountId || !config.gmailEnabled) return;
+  const before = accountVersion;
+  try {
+    const {address} = await gmailCall('status');
+    if (before !== accountVersion) return;
+    gmailAddress = address;
+    get('gmail-status').textContent = address ? 'Mittente: '+address : 'Collega Gmail per scegliere il tuo account come mittente.';
+    get('email-queue').hidden = !address;
+    if (address && settingsDialog.open) refreshQueue();
+  } catch (error) {
+    displayError(get('gmail-status'),error);
+  }
+}
+
+function openEmail() {
+  if (!emailRange) return;
+  if (!gmailAddress) {
+    settingsDialog.showModal();
+    return;
+  }
+  get('email-form').reset();
+  emailId = crypto.randomUUID();
+  const date = get('email-date');
+  date.min = date.value = isoDay(Math.max(emailRange.start,today+1));
+  date.max = isoDay(emailRange.end);
+  get('email-sender').textContent = gmailAddress;
+  get('email-error').hidden = true;
+  emailDialog.showModal();
+}
+
+async function refreshQueue() {
+  const list = get('queue-list');
+  const status = get('queue-status');
+  const before = accountVersion;
+  list.replaceChildren();
+  status.textContent = 'Caricamento…';
+  try {
+    const jobs = await gmailCall('list');
+    if (before !== accountVersion) return;
+    status.textContent = jobs.length ? '' : 'Nessuna email programmata.';
+    const labels = {scheduled:'In attesa',cancelled:'Annullata',sent:'Inviata',check:'Invio da verificare',sending:'Invio da verificare',reconnect:'Gmail da ricollegare'};
+    for (const job of jobs) {
+      const item = document.createElement('article');
+      const detail = document.createElement('p');
+      detail.textContent = [job.subject,job.recipient,job.local_time,labels[job.status]].join(' · ');
+      item.append(detail);
+      if (job.status === 'scheduled') {
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.textContent = 'Annulla invio';
+        cancel.addEventListener('click',async () => {
+          cancel.disabled = true;
+          try { await gmailCall('cancel',{id:job.id}); await refreshQueue(); }
+          catch (error) { displayError(status,error); cancel.disabled = false; }
+        });
+        item.append(cancel);
+      }
+      list.append(item);
+    }
+  } catch (error) { if (before === accountVersion) displayError(status,error); }
+}
+
+get('settings-open').addEventListener('click', () => {
+  hide();
+  settingsDialog.showModal();
+  refreshGmail();
+});
+get('gmail-connect').addEventListener('click', async () => {
+  if (!config.gmailEnabled) return;
+  try { location.assign((await gmailCall('connect')).url); }
+  catch (error) { displayError(get('gmail-status'),error); }
+});
+get('note-email').addEventListener('click',openEmail);
+for (const [element,event] of [[emailDialog,'cancel'],[get('email-close-form'),'submit']]) {
+  element.addEventListener(event,action => { if (get('email-submit').disabled) action.preventDefault(); });
+}
+get('email-to-self').addEventListener('click', () => { get('email-to').value = gmailAddress; });
+get('email-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = get('email-submit');
+  if (submit.disabled || !gmailAddress) return;
+  submit.disabled = true;
+  const error = get('email-error');
+  error.hidden = true;
+  try {
+    await gmailCall('schedule',{
+      id:emailId,to:get('email-to').value.trim(),subject:get('email-subject').value.trim(),
+      body:get('email-body').value,date:get('email-date').value,time:get('email-time').value
+    });
+    emailDialog.close();
+    const notice = get('schedule-notice');
+    notice.textContent = 'Email programmata';
+    notice.hidden = false;
+    clearTimeout(notice.timer);
+    notice.timer = setTimeout(() => { notice.hidden = true; },5000);
+  } catch (failure) { displayError(error,failure); }
+  finally { submit.disabled = false; }
+});
+
+async function startAuth() {
+  if (!hosted) return;
+  get('calendar-content').hidden = true;
+  get('login-screen').hidden = false;
+  get('gmail-connect').hidden = !config.gmailEnabled;
+  try {
+    const {createClient} = await import('https://esm.sh/@supabase/supabase-js@2.50.0');
+    authClient = createClient(config.supabaseUrl,config.supabasePublishableKey,{
+      auth:{flowType:'pkce',persistSession:true,detectSessionInUrl:true}
+    });
+    const url = new URL(location.href);
+    const gmail = url.searchParams.get('gmail');
+    if (gmail) {
+      url.searchParams.delete('gmail');
+      history.replaceState(null,'',url);
+      const messages = {account:'Scegli lo stesso indirizzo del tuo account.',errore:'Collegamento Gmail non riuscito.',collegato:'Gmail collegato.'};
+      get('schedule-notice').textContent = messages[gmail] || '';
+      get('schedule-notice').hidden = !messages[gmail];
+    }
+    authClient.auth.onAuthStateChange((event,session) => {
+      if (['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT'].includes(event)) setTimeout(() => setAccount(session),0);
+    });
+  } catch (error) { displayError(get('login-status'),error); }
+}
+startAuth();
+
+if (!hosted) {
+  get('calendar-content').hidden = false;
+  get('calendar-subtitle').hidden = false;
+  renderCalendar();
+}
+</script>
+</body>
+</html>
